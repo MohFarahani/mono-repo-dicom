@@ -47,82 +47,182 @@ This is a full-stack application for viewing and managing DICOM medical images. 
 └── scripts/                   # Utility scripts
 ```
 
-## Key Components
+## Backend Structure
 
-### Pages
-- `/`: Home page with main navigation
-- `/preview`: DICOM image preview page
-- `/upload`: File upload interface
+```
+backend/
+└── src/
+    ├── db/                     # Database configuration and models
+    │   ├── models/            # Database models (TypeORM entities)
+    │   ├── scripts/           # Database initialization scripts
+    │   ├── connection.ts      # Database connection setup
+    │   ├── config.ts          # Database configuration
+    │   └── init.ts           # Database initialization
+    │
+    ├── graphql/               # GraphQL API implementation
+    │   ├── resolvers/        # GraphQL resolvers
+    │   │   ├── mutations/    # Mutation resolvers
+    │   │   └── queries/      # Query resolvers
+    │   ├── schema/           # GraphQL schema definitions
+    │   ├── validation/       # Input validation
+    │   ├── operations.ts     # GraphQL operations
+    │   ├── resolvers.ts      # Resolver configuration
+    │   ├── schema.ts         # Schema configuration
+    │   └── types.ts          # GraphQL types
+    │
+    ├── routes/                # REST API routes
+    │   └── dicom.ts          # DICOM file handling routes
+    │
+    ├── types/                 # TypeScript type definitions
+    ├── utils/                 # Utility functions
+    └── index.ts              # Application entry point
+```
 
-### Components
-- `DicomViewer`: Main DICOM image viewing component
-- `DicomTable`: Table displaying DICOM file metadata
-- `ImagePreviewList`: Grid view of DICOM image previews
-- `Upload`: File upload interface with drag-and-drop
-- `ErrorDisplay`: Error handling and display component
+### Database Layer
+- **Models**: TypeORM entities for:
+  - DICOM files
+  - Patient information
+  - Study metadata
+- **Scripts**: SQL scripts for:
+  - Database initialization
+  - Schema creation
+  - Initial data seeding
+- **Configuration**: Database connection and setup
+
+### GraphQL API
+- **Resolvers**:
+  - Mutations for data modifications
+  - Queries for data retrieval
+  - File upload handling
+- **Schema**: 
+  - Type definitions
+  - Query definitions
+  - Mutation definitions
+- **Validation**: Input validation rules
+- **Operations**: Predefined GraphQL operations
+
+### REST API Routes
+- DICOM file upload endpoints
+- File processing routes
+- Static file serving
+
+### Core Features
+- DICOM file processing and storage
+- Patient and study data management
+- GraphQL API for frontend communication
+- File system operations for DICOM storage
+- Database operations for metadata storage
+
+
+## Frontend Structure
+
+```
+next/
+└── src/
+    ├── app/                    # Next.js 13+ app directory (routes)
+    │   ├── preview/           # DICOM preview functionality
+    │   │   ├── page.tsx      # Single preview page
+    │   │   └── multi/        # Multi-image preview
+    │   ├── upload/           # File upload functionality
+    │   │   └── page.tsx      # Upload page
+    │   ├── home/            # Home page
+    │   │   └── page.tsx     # Home page content
+    │   ├── layout.tsx       # Root layout component
+    │   └── theme.ts         # Theme configuration
+    │
+    ├── components/           # Reusable React components
+    │   ├── DicomViewer/     # DICOM image viewing
+    │   │   ├── index.tsx    # Main viewer component
+    │   │   └── controls.tsx # Viewer controls
+    │   ├── DicomTable/      # DICOM metadata table
+    │   ├── ImagePreviewList/ # Image preview grid
+    │   ├── DicomImageList/  # DICOM image listing
+    │   ├── DicomPreviewLayout/ # Preview layout
+    │   ├── Table/          # Base table component
+    │   ├── TwoColumnLayout/ # Layout component
+    │   ├── Upload.tsx      # Upload component
+    │   └── ErrorDisplay.tsx # Error handling
+    │
+    ├── hooks/               # Custom React hooks
+    │   ├── useDicomData.ts     # DICOM data management
+    │   ├── useDicomUpload.ts   # File upload logic
+    │   ├── useGetAllDicomFiles.ts # File fetching
+    │   └── useDicomViewer.ts   # Viewer state management
+    │
+    ├── constants/           # Application constants
+    │   ├── ui.ts           # UI-related constants
+    │   └── routes.ts       # Route definitions
+    │
+    └── graphql/            # GraphQL integration
+        ├── queries/        # GraphQL queries
+        ├── mutations/      # GraphQL mutations
+        └── schema.ts       # GraphQL types
+
+```
+
+### Page Components
+- **Preview Pages**:
+  - Single image preview with controls
+  - Multi-image comparison view
+  - Metadata display
+- **Upload Page**:
+  - Drag-and-drop file upload
+  - Upload progress tracking
+  - File validation
+- **Home Page**:
+  - Navigation hub
+  - Recent files display
+  - Quick actions
+
+### Core Components
+- **DicomViewer**:
+  - Image rendering
+  - Zoom and pan controls
+  - Window/level adjustment
+  - Measurement tools
+- **Data Display**:
+  - DICOM metadata tables
+  - Image preview grids
+  - Study information
+- **Layout Components**:
+  - Two-column layouts
+  - Responsive containers
+  - Error boundaries
 
 ### Custom Hooks
-- `useDicomData`: Manages DICOM file data and metadata
-- `useDicomUpload`: Handles file upload operations
-- `useGetAllDicomFiles`: Fetches all available DICOM files
-- `useDicomViewer`: Manages viewer state and interactions
+- **Data Management**:
+  - `useDicomData`: DICOM metadata handling
+  - `useDicomUpload`: File upload state and operations
+  - `useGetAllDicomFiles`: File listing and pagination
+  - `useDicomViewer`: Viewer state and interactions
 
-### Constants
-- `ui.ts`: UI-related constants (styles, themes, layouts)
-- `routes.ts`: Application route definitions
+### Constants and Configuration
+- **UI Constants**:
+  - Theme definitions
+  - Layout measurements
+  - Color schemes
+- **Route Definitions**:
+  - Page routes
+  - API endpoints
+  - Navigation paths
 
-### Features
-- DICOM file upload and processing
-- Image preview and manipulation
-- Metadata extraction and display
-- Multi-image viewing
-- Error handling and validation
-
-## Frontend Architecture
-
-The frontend is built using Next.js 13+ with the following key features:
-
-### Key Directories
-
-- `src/app/`: Contains the application routes and pages using Next.js 13+ app directory structure
-- `src/components/`: Reusable React components including:
-  - DICOM image viewers
-  - Navigation components
-  - Form components
-  - UI elements
-- `src/graphql/`: GraphQL related files:
-  - Queries and mutations
-  - GraphQL client configuration
-  - Type definitions
-- `src/providers/`: React context providers for:
-  - Authentication
-  - Theme
-  - Global state management
-- `src/hooks/`: Custom React hooks for:
-  - Data fetching
-  - UI state management
-  - DICOM file handling
-- `src/utils/`: Utility functions for:
-  - Data transformation
-  - File handling
-  - Date formatting
-- `src/types/`: TypeScript type definitions
-- `src/constants/`: Application-wide constants
-- `src/middleware/`: Next.js middleware for:
-  - Authentication
-  - Request handling
-  - Response transformation
+### GraphQL Integration
+- **Queries**:
+  - File metadata retrieval
+  - Study information
+  - Patient data
+- **Mutations**:
+  - File uploads
+  - Metadata updates
+  - Study management
 
 ### Key Features
-
-- Modern React with TypeScript
-- Server-side rendering (SSR) with Next.js
-- GraphQL integration for data fetching
-- Responsive design
-- DICOM image viewing capabilities
+- Server-side rendering (SSR)
+- Client-side navigation
 - Real-time updates
-- Client-side routing
-- Type-safe development with TypeScript
+- Responsive design
+- Error handling
+- TypeScript type safety
 
 ## Prerequisites
 

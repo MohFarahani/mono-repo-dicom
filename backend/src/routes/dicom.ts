@@ -194,4 +194,39 @@ router.get('/process-dicom', (req: Request, res: Response) => {
   return processDicomFile(fullPath, filePath, res);
 });
 
+// Route for downloading DICOM files
+router.get('/download', (req: Request, res: Response) => {
+  const filePath = req.query.filePath as string;
+  
+  if (!filePath) {
+    return res.status(400).json({ error: 'No file path provided' });
+  }
+
+  const fullPath = path.join(uploadDir, filePath);
+  
+  LogService.debug('Downloading DICOM file', { filePath, fullPath });
+
+  // Check if file exists
+  if (!fs.existsSync(fullPath)) {
+    LogService.error('File not found', { filePath, fullPath });
+    return res.status(404).json({ error: 'File not found' });
+  }
+
+  // Set headers for file download
+  res.setHeader('Content-Type', 'application/dicom');
+  res.setHeader('Content-Disposition', `attachment; filename="${filePath}"`);
+
+  // Stream the file
+  const fileStream = fs.createReadStream(fullPath);
+  fileStream.pipe(res);
+
+  // Handle errors
+  fileStream.on('error', (error) => {
+    LogService.error('Error streaming file', { error, filePath });
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Error downloading file' });
+    }
+  });
+});
+
 export default router; 

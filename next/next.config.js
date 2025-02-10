@@ -12,8 +12,12 @@ const nextConfig = {
         source: '/api/process-dicom',
         destination: `http://${backendHost}:4000/process-dicom`,
       },
+      {
+        source: '/api/download',
+        destination: `http://${backendHost}:4000/download`,
+      },
     ];
   },
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;

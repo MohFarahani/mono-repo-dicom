@@ -1,0 +1,44 @@
+-- Create tables if they don't exist
+CREATE TABLE IF NOT EXISTS Patients (
+  idPatient INT AUTO_INCREMENT PRIMARY KEY,
+  PatientName VARCHAR(255) NOT NULL,
+  CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS Studies (
+  idStudy INT AUTO_INCREMENT PRIMARY KEY,
+  idPatient INT NOT NULL,
+  StudyName VARCHAR(255),
+  StudyDate DATE NOT NULL,
+  CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (idPatient) REFERENCES Patients(idPatient)
+);
+
+CREATE TABLE IF NOT EXISTS Modalities (
+  idModality INT AUTO_INCREMENT PRIMARY KEY,
+  Name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Series (
+  idSeries INT AUTO_INCREMENT PRIMARY KEY,
+  idPatient INT NOT NULL,
+  idStudy INT NOT NULL,
+  idModality INT NOT NULL,
+  SeriesName VARCHAR(255),
+  CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (idPatient) REFERENCES Patients(idPatient),
+  FOREIGN KEY (idStudy) REFERENCES Studies(idStudy),
+  FOREIGN KEY (idModality) REFERENCES Modalities(idModality)
+);
+
+CREATE TABLE IF NOT EXISTS Files (
+  idFile INT AUTO_INCREMENT PRIMARY KEY,
+  idPatient INT,
+  idStudy INT,
+  idSeries INT,
+  FilePath VARCHAR(255) NOT NULL,
+  CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (idPatient) REFERENCES Patients(idPatient),
+  FOREIGN KEY (idStudy) REFERENCES Studies(idStudy),
+  FOREIGN KEY (idSeries) REFERENCES Series(idSeries)
+); 

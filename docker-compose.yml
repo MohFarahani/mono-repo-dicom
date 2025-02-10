@@ -1,0 +1,85 @@
+services:
+  db:
+    image: mysql:8.0
+    platform: linux/amd64
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: dicom_db
+      MYSQL_USER: dicom_user
+      MYSQL_PASSWORD: dicom_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/src/db/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=dicom_db
+      - DB_USER=dicom_user
+      - DB_PASS=dicom_password
+      - FRONTEND_URL=http://frontend:3000
+      - TS_NODE_PROJECT=tsconfig.json
+      - DICOM_FILES_PATH=/app/dicom_files
+    volumes:
+      - ./dicom_files:/app/dicom_files:rw
+      - ./backend:/app
+      - /app/node_modules
+      - /app/dist
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./next
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_BACKEND_URL=http://backend:4000/graphql
+      - NEXT_PUBLIC_BACKEND_HOST=backend
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=dicom_db
+      - DB_USER=dicom_user
+      - DB_PASS=dicom_password
+      - DICOM_FILES_PATH=/app/dicom_files
+    volumes:
+      - ./dicom_files:/app/dicom_files:ro
+      - ./next:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+volumes:
+  mysql_data:
+  dicom_files:
+
+networks:
+  app-network:
+    driver: bridge 

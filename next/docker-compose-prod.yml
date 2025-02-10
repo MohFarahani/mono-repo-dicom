@@ -1,0 +1,66 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: dicom_password
+      MYSQL_DATABASE: dicom_db
+      MYSQL_USER: dicom_user
+      MYSQL_PASSWORD: dicom_password
+    volumes:
+      - /var/lib/mysql-data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password --bind-address=0.0.0.0
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+    restart: always
+    ports:
+      - "80:3000"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=dicom_db
+      - DB_USER=dicom_user
+      - DB_PASS=dicom_password
+      - HOSTNAME=0.0.0.0
+    volumes:
+      - /var/lib/dicom-files:/app/dicom_files
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  app-network:
+    driver: bridge
+

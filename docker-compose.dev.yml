@@ -1,0 +1,53 @@
+services:
+  db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: dicom_db
+      MYSQL_USER: dicom_user
+      MYSQL_PASSWORD: dicom_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      DB_HOST: db
+      DB_USER: dicom_user
+      DB_PASS: dicom_password
+      DB_NAME: dicom_db
+      DB_PORT: 3306
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./backend/dicom_files:/app/dicom_files
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./next
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      BACKEND_URL: http://backend:4000/graphql
+      DB_HOST: db
+      DB_USER: dicom_user
+      DB_PASS: dicom_password
+      DB_NAME: dicom_db
+      DB_PORT: 3306
+    volumes:
+      - ./next:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data: 
